@@ -30,13 +30,15 @@ data_steam = pd.DataFrame(dataset)
 
 # Adecuación y limpieza del dataframe
 data_steam['release_date'] = pd.to_datetime(data_steam['release_date'], errors='coerce')
-data_steam = data_steam.dropna(subset=['release_date'])
 data_steam['metascore'] = pd.to_numeric(data_steam['metascore'], errors='coerce')
 data_steam['price'] = pd.to_numeric(data_steam['price'], errors='coerce')
-replacement_values = {'publisher': '', 'genres': '', 'tags': '', 'discount_price': 0, 'price': 0,
-                      'specs': '', 'reviews_url': '', 'metascore': 0, 'app_name': '', 'title': '',
+reemplazar_valores = {'publisher': '', 'genres': '', 'tags': '', 'discount_price': 0,
+                      'specs': '', 'reviews_url': '', 'app_name': '', 'title': '',
                        'id': '', 'sentiment': '', 'developer': ''}
-data_steam.fillna(value=replacement_values, inplace=True)
+data_steam.fillna(value=reemplazar_valores, inplace=True)
+data_steam = data_steam.dropna(subset=['price'])
+data_steam = data_steam.dropna(subset=['release_date'])
+data_steam = data_steam.dropna(subset=['metascore'])
 
 # Definición de la API con información de los juegos según año de lanzamiento
 min_year = data_steam['release_date'].dt.year.min()
@@ -104,9 +106,10 @@ def metascore(año: int):
     top_metascore_games = filtered_data_steam.nlargest(5, 'metascore')[['app_name', 'metascore']].set_index('app_name').to_dict()['metascore']
     return top_metascore_games
 
+from sklearn.ensemble import BaggingRegressor, RandomForestRegressor
+
 # Armado del modelo predictivo
 # Extracción datos desde listas anidadas en 'genres'
-steam_unnested = data_steam[data_steam['price'] != 0]
 steam_unnested = data_steam.explode('genres')
 steam_unnested['genres'] = steam_unnested['genres'].replace('', np.nan)
 steam_unnested = steam_unnested.dropna(subset=['genres'])
@@ -116,10 +119,6 @@ steam_unnested['release_year'] = steam_unnested['release_date'].dt.year
 
 # Conversión de 'genres' a valores numéricos 
 steam_dummies = pd.get_dummies(steam_unnested, columns=['genres'], prefix='', prefix_sep='')
-
-# Normalización de los datos
-scaler = StandardScaler()
-steam_dummies[['release_year', 'metascore']] = scaler.fit_transform(steam_dummies[['release_year', 'metascore']])
 
 # División del dataframe en sets de entrenamiento y prueba
 X = steam_dummies[['release_year', 'metascore'] + list(steam_dummies.columns[steam_dummies.columns.str.contains('genres')])]
@@ -132,12 +131,13 @@ X_train_poly = poly.fit_transform(X_train)
 X_test_poly = poly.transform(X_test)
 
 # Entrenamiento del modelo
-model = Ridge(alpha=1.0)  # Prueba con la regresión de Ridge
-model.fit(X_train_poly, y_train)
+model = BaggingRegressor(n_estimators=200, random_state=42)  # puedes ajustar los parámetros como mejor te parezca
+model.fit(X_train, y_train)
 
 # Evaluación del modelo
-y_pred = model.predict(X_test_poly)
+y_pred = model.predict(X_test)
 rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+print(rmse)
 
 # Definición de la API que muestra la predicción de precios y RMSE
 # Obtención de todos los géneros únicos
