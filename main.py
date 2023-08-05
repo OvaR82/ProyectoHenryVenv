@@ -160,17 +160,19 @@ async def get_prediccion(
         ...,  # Parámetro requerido
         description="Elija el Metascore del juego.",
     ),
-    early_access: bool = Query(
+    early_access: str = Query(
         ...,  # Parámetro requerido
-        description="Indica si el juego está en acceso anticipado."
+        description="Indica si el juego está en acceso anticipado. Elija 'si' o 'no'.",
     )
 ):
     # Usar dummies de 'genres'
     genres = list(steam_dummies.columns[steam_dummies.columns.str.contains('genres')])
     if genero not in all_genres:
         raise HTTPException(status_code=400, detail="Género no válido. Por favor use un género de la lista de géneros disponibles.")
+    if early_access.lower() not in ['si', 'no']:
+        raise HTTPException(status_code=400, detail="Valor no válido para 'early_access'. Elija 'si' o 'no'.")
     genre_data = [1 if genre == genero else 0 for genre in genres]
-    early_access_data = int(early_access)
+    early_access_data = 1 if early_access.lower() == 'si' else 0
     data = np.array([año, metascore, early_access_data] + genre_data).reshape(1, -1)
     
     # Aplicar la transformación polinomial
