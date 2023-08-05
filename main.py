@@ -132,7 +132,7 @@ X_test_poly = poly.transform(X_test)
 
 # Entrenamiento del modelo
 model = BaggingRegressor(n_estimators=200, random_state=42)  # puedes ajustar los parámetros como mejor te parezca
-model.fit(X_train_poly, y_train)
+model.fit(X_train, y_train)
 
 # Evaluación del modelo
 y_pred = model.predict(X_test)
