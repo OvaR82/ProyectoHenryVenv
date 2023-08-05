@@ -6,6 +6,7 @@ import numpy as np
 import pickle
 import warnings
 warnings.filterwarnings('ignore')
+from sklearn.ensemble import BaggingRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.linear_model import LinearRegression, Ridge
@@ -106,8 +107,6 @@ def metascore(año: int):
     top_metascore_games = filtered_data_steam.nlargest(5, 'metascore')[['app_name', 'metascore']].set_index('app_name').to_dict()['metascore']
     return top_metascore_games
 
-from sklearn.ensemble import BaggingRegressor, RandomForestRegressor
-
 # Armado del modelo predictivo
 # Extracción datos desde listas anidadas en 'genres'
 steam_unnested = data_steam.explode('genres')
@@ -117,14 +116,14 @@ steam_unnested = steam_unnested.dropna(subset=['genres'])
 # Conversión de 'release_date' a año
 steam_unnested['release_year'] = steam_unnested['release_date'].dt.year
 
+# Conversión de 'early_access' a valores numéricos 
+steam_unnested['early_access'] = steam_unnested['early_access'].astype(int)
+
 # Conversión de 'genres' a valores numéricos 
 steam_dummies = pd.get_dummies(steam_unnested, columns=['genres'], prefix='', prefix_sep='')
 
-# Asegurándose que 'early_access' es un entero
-steam_unnested['early_access'] = steam_unnested['early_access'].astype(int)
-
 # División del dataframe en sets de entrenamiento y prueba
-X = steam_dummies[['release_year', 'early_access'] + list(steam_dummies.columns[steam_dummies.columns.str.contains('genres')])]
+X = steam_dummies[['release_year', 'metascore', 'early_access'] + list(steam_dummies.columns[steam_dummies.columns.str.contains('genres')])]
 y = steam_dummies['price']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -146,7 +145,7 @@ print("RMSE:", rmse)
 # Obtención de todos los géneros únicos
 all_genres = steam_unnested['genres'].unique().tolist()
 
-# Función que retorna el precio y el RMSE del juego según género, año y metascore a seleccionar
+# Para la API, también necesitas incluir 'early_access' como un parámetro en la función get_prediccion.
 @app.get("/prediccion/")
 async def get_prediccion(
     genero: str = Query(
@@ -157,9 +156,13 @@ async def get_prediccion(
         ...,  # Parámetro requerido
         description=f"Elija el año de lanzamiento del juego, entre {min_year} y {max_year}.",
     ),
-    early_access: int = Query(
+    metascore: int = Query(
         ...,  # Parámetro requerido
-        description="Indique si el juego es de acceso temprano (1: Sí, 0: No).",
+        description="Elija el Metascore del juego.",
+    ),
+    early_access: bool = Query(
+        ...,  # Parámetro requerido
+        description="Indica si el juego está en acceso anticipado."
     )
 ):
     # Usar dummies de 'genres'
@@ -167,9 +170,12 @@ async def get_prediccion(
     if genero not in all_genres:
         raise HTTPException(status_code=400, detail="Género no válido. Por favor use un género de la lista de géneros disponibles.")
     genre_data = [1 if genre == genero else 0 for genre in genres]
-    data = np.array([año, early_access] + genre_data).reshape(1, -1)
+    early_access_data = int(early_access)
+    data = np.array([año, metascore, early_access_data] + genre_data).reshape(1, -1)
     
     # Aplicar la transformación polinomial
     data_poly = poly.transform(data)
     price = model.predict(data_poly)[0]
     return {'price': price, 'rmse': rmse}
+
+
