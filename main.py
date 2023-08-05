@@ -7,8 +7,8 @@ import pickle
 import warnings
 warnings.filterwarnings('ignore')
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.metrics import mean_squared_error
 from fastapi import FastAPI
 from datetime import datetime
@@ -117,6 +117,10 @@ steam_unnested['release_year'] = steam_unnested['release_date'].dt.year
 # Conversión de 'genres' a valores numéricos 
 steam_dummies = pd.get_dummies(steam_unnested, columns=['genres'], prefix='', prefix_sep='')
 
+# Normalización de los datos
+scaler = StandardScaler()
+steam_dummies[['release_year', 'metascore']] = scaler.fit_transform(steam_dummies[['release_year', 'metascore']])
+
 # División del dataframe en sets de entrenamiento y prueba
 X = steam_dummies[['release_year', 'metascore'] + list(steam_dummies.columns[steam_dummies.columns.str.contains('genres')])]
 y = steam_dummies['price']
@@ -128,7 +132,7 @@ X_train_poly = poly.fit_transform(X_train)
 X_test_poly = poly.transform(X_test)
 
 # Entrenamiento del modelo
-model = LinearRegression()
+model = Ridge(alpha=1.0)  # Prueba con la regresión de Ridge
 model.fit(X_train_poly, y_train)
 
 # Evaluación del modelo
