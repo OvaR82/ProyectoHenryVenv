@@ -137,7 +137,6 @@ model.fit(X_train, y_train)
 # Evaluación del modelo
 y_pred = model.predict(X_test)
 rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-print(rmse)
 
 # Definición de la API que muestra la predicción de precios y RMSE
 # Obtención de todos los géneros únicos
