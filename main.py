@@ -120,8 +120,11 @@ steam_unnested['release_year'] = steam_unnested['release_date'].dt.year
 # Conversión de 'genres' a valores numéricos 
 steam_dummies = pd.get_dummies(steam_unnested, columns=['genres'], prefix='', prefix_sep='')
 
+# Asegurándose que 'early_access' es un entero
+steam_unnested['early_access'] = steam_unnested['early_access'].astype(int)
+
 # División del dataframe en sets de entrenamiento y prueba
-X = steam_dummies[['release_year', 'metascore'] + list(steam_dummies.columns[steam_dummies.columns.str.contains('genres')])]
+X = steam_dummies[['release_year', 'early_access'] + list(steam_dummies.columns[steam_dummies.columns.str.contains('genres')])]
 y = steam_dummies['price']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -154,9 +157,9 @@ async def get_prediccion(
         ...,  # Parámetro requerido
         description=f"Elija el año de lanzamiento del juego, entre {min_year} y {max_year}.",
     ),
-    metascore: int = Query(
+    early_access: int = Query(
         ...,  # Parámetro requerido
-        description="Elija el Metascore del juego.",
+        description="Indique si el juego es de acceso temprano (1: Sí, 0: No).",
     )
 ):
     # Usar dummies de 'genres'
@@ -164,7 +167,7 @@ async def get_prediccion(
     if genero not in all_genres:
         raise HTTPException(status_code=400, detail="Género no válido. Por favor use un género de la lista de géneros disponibles.")
     genre_data = [1 if genre == genero else 0 for genre in genres]
-    data = np.array([año, metascore] + genre_data).reshape(1, -1)
+    data = np.array([año, early_access] + genre_data).reshape(1, -1)
     
     # Aplicar la transformación polinomial
     data_poly = poly.transform(data)
