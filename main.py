@@ -21,25 +21,12 @@ from typing import Dict, Union
 # Implementación de FastAPI
 app = FastAPI()
 
-# Recuperación de datos desde un archivo .json 
-dataset = []
-with open('dataset/steam_games.json') as f: 
-    dataset.extend(ast.literal_eval(line) for line in f)
+# Recuperación de datos desde el archivo .csv  
+data_steam = pd.read_csv('dataset/clean_steam_data.csv')
 
-# Creación del dataframe a partir del dataset obtenido
-data_steam = pd.DataFrame(dataset)
-
-# Adecuación y limpieza del dataframe
+# Evaluamos la variable 'release_date'
 data_steam['release_date'] = pd.to_datetime(data_steam['release_date'], errors='coerce')
-data_steam['metascore'] = pd.to_numeric(data_steam['metascore'], errors='coerce')
-data_steam['price'] = pd.to_numeric(data_steam['price'], errors='coerce')
-reemplazar_valores = {'publisher': '', 'genres': '', 'tags': '', 'discount_price': 0,
-                      'specs': '', 'reviews_url': '', 'app_name': '', 'title': '',
-                       'id': '', 'sentiment': '', 'developer': ''}
-data_steam.fillna(value=reemplazar_valores, inplace=True)
-data_steam = data_steam.dropna(subset=['price'])
 data_steam = data_steam.dropna(subset=['release_date'])
-data_steam = data_steam.dropna(subset=['metascore'])
 
 # Definición de la API con información de los juegos según año de lanzamiento
 min_year = data_steam['release_date'].dt.year.min()
@@ -108,19 +95,19 @@ def metascore(año: int):
     return top_metascore_games
 
 # Armado del modelo predictivo
-# Extracción datos desde listas anidadas en 'genres'
-steam_unnested = data_steam.explode('genres')
-steam_unnested['genres'] = steam_unnested['genres'].replace('', np.nan)
-steam_unnested = steam_unnested.dropna(subset=['genres'])
+# Adecuación de los datos de la variable 'genres'
+data_steam_model = data_steam.copy()
+data_steam_model['genres'] = data_steam_model['genres'].replace('', np.nan)
+data_steam_model = data_steam_model.dropna(subset=['genres'])
 
 # Conversión de 'release_date' a año
-steam_unnested['release_year'] = steam_unnested['release_date'].dt.year
+data_steam_model['release_year'] = data_steam_model['release_date'].dt.year
 
 # Conversión de 'early_access' a valores numéricos 
-steam_unnested['early_access'] = steam_unnested['early_access'].astype(int)
+data_steam_model['early_access'] = data_steam_model['early_access'].astype(int)
 
 # Conversión de 'genres' a valores numéricos 
-steam_dummies = pd.get_dummies(steam_unnested, columns=['genres'], prefix='', prefix_sep='')
+steam_dummies = pd.get_dummies(data_steam_model, columns=['genres'], prefix='', prefix_sep='')
 
 # División del dataframe en sets de entrenamiento y prueba
 X = steam_dummies[['release_year', 'metascore', 'early_access'] + list(steam_dummies.columns[steam_dummies.columns.str.contains('genres')])]
@@ -139,11 +126,11 @@ model.fit(X_train_poly, y_train)
 # Evaluación del modelo
 y_pred = model.predict(X_test_poly)
 rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-print("RMSE:", rmse)
+# print("RMSE:", rmse)
 
 # Definición de la API que muestra la predicción de precios y RMSE
 # Obtención de todos los géneros únicos
-all_genres = steam_unnested['genres'].unique().tolist()
+all_genres = data_steam_model['genres'].unique().tolist()
 
 # Para la API, también necesitas incluir 'early_access' como un parámetro en la función get_prediccion.
 @app.get("/prediccion/")
