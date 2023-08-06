@@ -110,8 +110,6 @@ def metascore(año: int):
 # Armado del modelo predictivo
 # Extracción datos desde listas anidadas en 'genres'
 steam_unnested = data_steam.explode('genres').explode('tags').explode('specs')
-# steam_unnested['genres'] = steam_unnested['genres'].replace('', np.nan)
-# steam_unnested = steam_unnested.dropna(subset=['genres'])
 
 # Conversión de 'release_date' a año
 steam_unnested['release_year'] = steam_unnested['release_date'].dt.year
@@ -120,10 +118,10 @@ steam_unnested['release_year'] = steam_unnested['release_date'].dt.year
 steam_unnested['early_access'] = steam_unnested['early_access'].astype(int)
 
 # Conversión de 'genres' a valores numéricos 
-steam_dummies = pd.get_dummies(steam_unnested, columns=['genres', 'tags', 'id', 'developer'], prefix=['', '', '', ''], prefix_sep=['', '', '', ''])
+steam_dummies = pd.get_dummies(steam_unnested, columns=['genres'], prefix=[''], prefix_sep=[''])
 
 # División del dataframe en sets de entrenamiento y prueba
-X = steam_dummies[['release_year', 'metascore', 'early_access'] + list(steam_dummies.columns[steam_dummies.columns.str.contains('genres|tags|developer|id')])]
+X = steam_dummies[['release_year', 'metascore', 'early_access'] + list(steam_dummies.columns[steam_dummies.columns.str.contains('genres')])]
 y = steam_dummies['price']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -133,15 +131,14 @@ X_train_poly = poly.fit_transform(X_train)
 X_test_poly = poly.transform(X_test)
 
 # Entrenamiento del modelo
-# model = BaggingRegressor()  # puedes ajustar los parámetros como mejor te parezca
-model = RandomForestRegressor()
+model = BaggingRegressor() 
 model.fit(X_train_poly, y_train)
 
 # Evaluación del modelo
 y_pred = model.predict(X_test_poly)
 rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-r2 = r2_score(y_test, y_pred) # cálculo del R2
-print('RMSE:', rmse,'R2:', r2)
+# r2 = r2_score(y_test, y_pred)
+# print('RMSE:', rmse,'R2:', r2)
 
 # Definición de la API que muestra la predicción de precios, RMSE y R2
 # Obtención de todos los géneros únicos
@@ -180,6 +177,6 @@ async def get_prediccion(
     # Aplicar la transformación polinomial
     data_poly = poly.transform(data)
     price = model.predict(data_poly)[0]
-    return {'price': price, 'rmse': rmse, 'r2': r2} # añadimos r2 en la respuesta
+    return {'Precio': price, 'Error Cuadrático Medio': rmse}
 
 
