@@ -6,11 +6,11 @@ import numpy as np
 import pickle
 import warnings
 warnings.filterwarnings('ignore')
-from sklearn.ensemble import BaggingRegressor
+from sklearn.ensemble import BaggingRegressor, RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.linear_model import LinearRegression, Ridge
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, r2_score
 from fastapi import FastAPI
 from datetime import datetime
 from fastapi import FastAPI, HTTPException, Query
@@ -120,10 +120,10 @@ steam_unnested['release_year'] = steam_unnested['release_date'].dt.year
 steam_unnested['early_access'] = steam_unnested['early_access'].astype(int)
 
 # Conversión de 'genres' a valores numéricos 
-steam_dummies = pd.get_dummies(steam_unnested, columns=['genres'], prefix='', prefix_sep='')
+steam_dummies = pd.get_dummies(steam_unnested, columns=['genres', 'developer'], prefix=['', ''], prefix_sep=['', ''])
 
 # División del dataframe en sets de entrenamiento y prueba
-X = steam_dummies[['release_year', 'metascore', 'early_access'] + list(steam_dummies.columns[steam_dummies.columns.str.contains('genres')])]
+X = steam_dummies[['release_year', 'metascore', 'early_access'] + list(steam_dummies.columns[steam_dummies.columns.str.contains('genres', 'developer')])]
 y = steam_dummies['price']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -139,9 +139,10 @@ model.fit(X_train_poly, y_train)
 # Evaluación del modelo
 y_pred = model.predict(X_test_poly)
 rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-print("RMSE:", rmse)
+r2 = r2_score(y_test, y_pred) # cálculo del R2
+print('RMSE:', rmse,'R2:', r2)
 
-# Definición de la API que muestra la predicción de precios y RMSE
+# Definición de la API que muestra la predicción de precios, RMSE y R2
 # Obtención de todos los géneros únicos
 all_genres = steam_unnested['genres'].unique().tolist()
 
@@ -178,6 +179,6 @@ async def get_prediccion(
     # Aplicar la transformación polinomial
     data_poly = poly.transform(data)
     price = model.predict(data_poly)[0]
-    return {'price': price, 'rmse': rmse}
+    return {'price': price, 'rmse': rmse, 'r2': r2} # añadimos r2 en la respuesta
 
 
