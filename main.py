@@ -138,9 +138,15 @@ with open('dataset/model.pkl', 'rb') as file:
 with open('dataset/poly_transform.pkl', 'rb') as file:
     poly = pickle.load(file)
 
+# Cargar el valor de RMSE desde un archivo .pkl
+with open('dataset/rmse.pkl', 'rb') as file:
+    rmse = pickle.load(file)
+
 # Cargar steam_dummies desde un archivo .pkl (asegúrate de haberlo guardado previamente)
 with open('dataset/steam_dummies.pkl', 'rb') as file:
     steam_dummies = pickle.load(file)
+
+print(rmse)
 
 # Obtención de todos los géneros únicos
 all_genres = steam_dummies.columns[steam_dummies.columns.str.contains('genres')].tolist()
@@ -175,9 +181,6 @@ async def get_prediccion(
     # Aplicar la transformación polinomial
     data_poly = poly.transform(data)
     price = model.predict(data_poly)[0]
-
-    # Calcular el RMSE relevante a esta predicción
-    rmse = np.sqrt(mean_squared_error(y_test, model.predict(X_test_poly)))
     
     return {'price': price, 'rmse': rmse}
 

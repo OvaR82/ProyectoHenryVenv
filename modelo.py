@@ -66,6 +66,9 @@ with open('dataset/model.pkl', 'wb') as file:
 with open('dataset/poly_transform.pkl', 'wb') as file:
     pickle.dump(poly, file)
 
+with open('dataset/rmse.pkl', 'wb') as file:
+    pickle.dump(rmse, file)
+
 # Guardamos también la variable steam_dummies
 with open('dataset/steam_dummies.pkl', 'wb') as file:
     pickle.dump(steam_dummies, file)
