@@ -94,6 +94,7 @@ def metascore(año: int):
     top_metascore_games = filtered_data_steam.nlargest(5, 'metascore')[['app_name', 'metascore']].set_index('app_name').to_dict()['metascore']
     return top_metascore_games
 
+'''
 # Armado del modelo predictivo
 # Adecuación de los datos de la variable 'genres'
 data_steam_model = data_steam.copy()
@@ -127,12 +128,23 @@ model.fit(X_train_poly, y_train)
 y_pred = model.predict(X_test_poly)
 rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 # print("RMSE:", rmse)
+'''
 
-# Definición de la API que muestra la predicción de precios y RMSE
+# Cargar el modelo desde un archivo .pkl
+with open('dataset/model.pkl', 'rb') as file:
+    model = pickle.load(file)
+
+# Cargar el transformador polinomial desde un archivo .pkl
+with open('dataset/poly_transform.pkl', 'rb') as file:
+    poly = pickle.load(file)
+
+# Cargar steam_dummies desde un archivo .pkl (asegúrate de haberlo guardado previamente)
+with open('dataset/steam_dummies.pkl', 'rb') as file:
+    steam_dummies = pickle.load(file)
+
 # Obtención de todos los géneros únicos
-all_genres = data_steam_model['genres'].unique().tolist()
+all_genres = steam_dummies.columns[steam_dummies.columns.str.contains('genres')].tolist()
 
-# Para la API, también necesitas incluir 'early_access' como un parámetro en la función get_prediccion.
 @app.get("/prediccion/")
 async def get_prediccion(
     genero: str = Query(
@@ -152,19 +164,20 @@ async def get_prediccion(
         description="Indica si el juego está en acceso anticipado. Elija 'si' o 'no'.",
     )
 ):
-    # Usar dummies de 'genres'
-    genres = list(steam_dummies.columns[steam_dummies.columns.str.contains('genres')])
     if genero not in all_genres:
         raise HTTPException(status_code=400, detail="Género no válido. Por favor use un género de la lista de géneros disponibles.")
     if early_access.lower() not in ['si', 'no']:
         raise HTTPException(status_code=400, detail="Valor no válido para 'early_access'. Elija 'si' o 'no'.")
-    genre_data = [1 if genre == genero else 0 for genre in genres]
+    genre_data = [1 if genre == genero else 0 for genre in all_genres]
     early_access_data = 1 if early_access.lower() == 'si' else 0
     data = np.array([año, metascore, early_access_data] + genre_data).reshape(1, -1)
     
     # Aplicar la transformación polinomial
     data_poly = poly.transform(data)
     price = model.predict(data_poly)[0]
-    return {'price': price, 'rmse': rmse}
 
+    # Calcular el RMSE relevante a esta predicción
+    rmse = np.sqrt(mean_squared_error(y_test, model.predict(X_test_poly)))
+    
+    return {'price': price, 'rmse': rmse}
 
