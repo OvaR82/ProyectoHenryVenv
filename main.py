@@ -121,7 +121,7 @@ steam_unnested['early_access'] = steam_unnested['early_access'].astype(int)
 steam_dummies = pd.get_dummies(steam_unnested, columns=['genres'], prefix=[''], prefix_sep=[''])
 
 # División del dataframe en sets de entrenamiento y prueba
-X = steam_dummies[['release_year', 'metascore', 'early_access'] + list(steam_dummies.columns[steam_dummies.columns.str.contains('genres')])]
+X = steam_dummies[['release_year',] + list(steam_dummies.columns[steam_dummies.columns.str.contains('genres')])]
 y = steam_dummies['price']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
