@@ -6,10 +6,10 @@ import numpy as np
 import pickle
 import warnings
 warnings.filterwarnings('ignore')
-from sklearn.ensemble import BaggingRegressor, RandomForestRegressor
+from sklearn.ensemble import BaggingRegressor, RandomForestRegressor 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
-from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.linear_model import LinearRegression, Ridge, LogisticRegression
 from sklearn.metrics import mean_squared_error, r2_score
 from fastapi import FastAPI
 from datetime import datetime
@@ -109,9 +109,9 @@ def metascore(año: int):
 
 # Armado del modelo predictivo
 # Extracción datos desde listas anidadas en 'genres'
-steam_unnested = data_steam.explode('genres')
-steam_unnested['genres'] = steam_unnested['genres'].replace('', np.nan)
-steam_unnested = steam_unnested.dropna(subset=['genres'])
+steam_unnested = data_steam.explode('genres').explode('tags').explode('specs')
+# steam_unnested['genres'] = steam_unnested['genres'].replace('', np.nan)
+# steam_unnested = steam_unnested.dropna(subset=['genres'])
 
 # Conversión de 'release_date' a año
 steam_unnested['release_year'] = steam_unnested['release_date'].dt.year
@@ -120,10 +120,10 @@ steam_unnested['release_year'] = steam_unnested['release_date'].dt.year
 steam_unnested['early_access'] = steam_unnested['early_access'].astype(int)
 
 # Conversión de 'genres' a valores numéricos 
-steam_dummies = pd.get_dummies(steam_unnested, columns=['genres', 'developer'], prefix=['', ''], prefix_sep=['', ''])
+steam_dummies = pd.get_dummies(steam_unnested, columns=['genres', 'tags', 'id', 'developer'], prefix=['', '', '', ''], prefix_sep=['', '', '', ''])
 
 # División del dataframe en sets de entrenamiento y prueba
-X = steam_dummies[['release_year', 'metascore', 'early_access'] + list(steam_dummies.columns[steam_dummies.columns.str.contains('genres', 'developer')])]
+X = steam_dummies[['release_year', 'metascore', 'early_access'] + list(steam_dummies.columns[steam_dummies.columns.str.contains('genres|tags|developer|id')])]
 y = steam_dummies['price']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -133,7 +133,8 @@ X_train_poly = poly.fit_transform(X_train)
 X_test_poly = poly.transform(X_test)
 
 # Entrenamiento del modelo
-model = BaggingRegressor(n_estimators=200, random_state=42)  # puedes ajustar los parámetros como mejor te parezca
+# model = BaggingRegressor()  # puedes ajustar los parámetros como mejor te parezca
+model = RandomForestRegressor()
 model.fit(X_train_poly, y_train)
 
 # Evaluación del modelo
