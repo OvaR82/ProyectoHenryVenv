@@ -90,4 +90,4 @@ En resumen, el archivo 'main.py' ofrece una API completa y funcional que permite
 
 ## Links relacionados
 * Acceso a la API: https://deploy-henry-project.onrender.com/docs
-* Acceso al video explicativo:  
+* Acceso al video explicativo: https://youtu.be/-hGSxBUeNxo
