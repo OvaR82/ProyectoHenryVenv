@@ -18,7 +18,7 @@ Se crearan 6 funciones para los endpoints que se consumirán en la API, debiendo
     no cumplen con las condiciones para ser consideradas una API, sin workarounds.
 Deployment: Utilizar Render, Railway o cualquier otro servicio que permita que la API pueda ser consumida desde la web.
 '''
-# Importación de librerías necesarias
+# Importamos las librerías necesarias
 import json
 import ast
 import pandas as pd
@@ -37,18 +37,18 @@ from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 from typing import Dict, Union
 
-# Implementación de FastAPI
+# Implementamos FastAPI
 app = FastAPI()
 
-# Recuperación de datos desde un archivo .json 
+# Recuperamos los datos desde el archivo .json provisto 
 dataset = []
 with open('dataset/steam_games.json') as f: 
     dataset.extend(ast.literal_eval(line) for line in f)
 
-# Creación del dataframe a partir del dataset obtenido
+# Creamos el dataframe a partir del dataset obtenido
 data_steam = pd.DataFrame(dataset)
 
-# Adecuación y limpieza del dataframe
+# Adecuamos y limpiamos el dataframe
 data_steam['release_date'] = pd.to_datetime(data_steam['release_date'], errors='coerce')
 data_steam['metascore'] = pd.to_numeric(data_steam['metascore'], errors='coerce')
 data_steam['price'] = pd.to_numeric(data_steam['price'], errors='coerce')
@@ -60,15 +60,17 @@ data_steam = data_steam.dropna(subset=['price'])
 data_steam = data_steam.dropna(subset=['release_date'])
 data_steam = data_steam.dropna(subset=['metascore'])
 
-# Definición de la API con información de los juegos según año de lanzamiento
+# Establecemos los límites de años de lanzamiento presentes en el dataframe
 min_year = data_steam['release_date'].dt.year.min()
 max_year = data_steam['release_date'].dt.year.max()
 
+# Definimos una función de chequeo de años, que luego usaremos en las funciones de la API
 def check_year(year: int):
     if year < min_year or year > max_year:
         raise HTTPException(status_code=400, detail=f"Año sin registro en la base de datos. Elija un año entre {min_year} y {max_year}.")
 
-# Función que habilita el acceso a la API
+# Creamos las primeras funciones que operarán en la API
+# Función que presenta el acceso a la API
 @app.get("/")
 async def read_root():
     return {"Proyecto Individual SoyHenry": "API Modelo Predicción de Precios Steam"}
@@ -131,46 +133,46 @@ def metascore(año: int):
     top_metascore_games = filtered_data_steam.nlargest(5, 'metascore')[['app_name', 'metascore']].set_index('app_name').to_dict()['metascore']
     return top_metascore_games
 
-# Armado del modelo predictivo
-# Extracción datos desde listas anidadas en 'genres'
+# Armamos el modelo predictivo
+# Extraemos datos desde listas anidadas en las variables 'genres', 'tags' y 'specs
 steam_unnested = data_steam.explode('genres').explode('tags').explode('specs')
 steam_unnested['genres'] = steam_unnested['genres'].replace('', np.nan)
 steam_unnested = steam_unnested.dropna(subset=['genres'])
 
-# Conversión de 'release_date' a año
+# Convertimos 'release_date' a año
 steam_unnested['release_year'] = steam_unnested['release_date'].dt.year
 
-# Conversión de 'early_access' a valores numéricos 
+# Convertimos 'early_access' a valores numéricos 
 steam_unnested['early_access'] = steam_unnested['early_access'].astype(int)
 
-# Conversión de 'genres' a valores numéricos 
+# Convertimos 'genres' a valores numéricos 
 steam_dummies = pd.get_dummies(steam_unnested, columns=['genres'], prefix=[''], prefix_sep=[''])
 
-# División del dataframe en sets de entrenamiento y prueba
+# Dividimos el dataframe en sets de entrenamiento y prueba
 X = steam_dummies[['release_year', 'metascore', 'early_access'] + list(steam_dummies.columns[steam_dummies.columns.str.contains('genres')])]
 y = steam_dummies['price']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Definición de la características polinomiales para el modelo predictivo
+# Definimos las características polinomiales para el modelo predictivo
 poly = PolynomialFeatures(degree=2)
 X_train_poly = poly.fit_transform(X_train)
 X_test_poly = poly.transform(X_test)
 
-# Entrenamiento del modelo
+# Entrenamos el modelo con el algoritmo más adecuado
 model = BaggingRegressor() 
 model.fit(X_train_poly, y_train)
 
-# Evaluación del modelo
+# Evaluamos el modelo
 y_pred = model.predict(X_test_poly)
 rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 # r2 = r2_score(y_test, y_pred)
 # print('RMSE:', rmse,'R2:', r2)
 
-# Definición de la API que muestra la predicción de precios, RMSE y R2
-# Obtención de todos los géneros únicos
+# Creamos la función que mostrará el modelo predictivo en la API
+# Obtenemos todos los géneros únicos para aplicarlos a la función
 all_genres = steam_unnested['genres'].unique().tolist()
 
-# Para la API, también necesitas incluir 'early_access' como un parámetro en la función get_prediccion.
+# Definimos la función y sus requerimientos
 @app.get("/prediccion/")
 async def get_prediccion(
     genero: str = Query(
@@ -190,7 +192,7 @@ async def get_prediccion(
         description="Indica si el juego está en acceso anticipado. Elija 'si' o 'no'.",
     )
 ):
-    # Usar dummies de 'genres'
+    # Usamos los dummies de 'genres'
     genres = list(steam_dummies.columns[steam_dummies.columns.str.contains('genres')])
     if genero not in all_genres:
         raise HTTPException(status_code=400, detail="Género no válido. Por favor use un género de la lista de géneros disponibles.")
@@ -199,10 +201,10 @@ async def get_prediccion(
     genre_data = [1 if genre == genero else 0 for genre in genres]
     early_access_data = 1 if early_access.lower() == 'si' else 0
     data = np.array([año, metascore, early_access_data] + genre_data).reshape(1, -1)
-    
-    # Aplicar la transformación polinomial
+    # Aplicamos la transformación polinomial
     data_poly = poly.transform(data)
     price = model.predict(data_poly)[0]
+    # Mostramos los resultados
     return {'Precio': price, 'Error Cuadrático Medio': rmse}
 
 
