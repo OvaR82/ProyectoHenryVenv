@@ -5,7 +5,7 @@
 Este proyecto tiene como objetivo desarrollar un modelo predictivo para predecir el precio de un videojuego utilizando el dataset de steam_games. Para lograr este objetivo, se realizará un proceso de Extracción, Transformación y Carga (ETL) para limpiar y preparar los datos, así como un Análisis Exploratorio de Datos (EDA) para entender las relaciones entre las variables y detectar patrones interesantes.
 
 ### Problema de negocio
-El problema de negocio consiste en predecir el precio de los videojuegos en la plataforma Steam, utilizando información como género, año de lanzamiento, puntaje en Metacritic (metascore), entre otros. El objetivo es crear un modelo predictivo eficiente que pueda ser utilizado para estimar el precio de nuevos videojuegos.
+El problema de negocio consiste en predecir el precio de los videojuegos en la plataforma Steam, utilizando información como género, año de lanzamiento, puntaje en Metacritic (metascore), entre otros. 
 
 ### Objetivos
 1. Realizar la limpieza inicial de los datos y asegurar que el dataframe contenga la información adecuada para el análisis.
