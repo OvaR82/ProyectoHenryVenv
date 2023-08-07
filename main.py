@@ -129,6 +129,7 @@ def metascore(año: int):
 # Armado del modelo predictivo
 # Extracción datos desde listas anidadas en 'genres'
 steam_unnested = data_steam.explode('genres').explode('tags').explode('specs')
+steam_unnested = steam_unnested.dropna(subset=['genres'])
 
 # Conversión de 'release_date' a año
 steam_unnested['release_year'] = steam_unnested['release_date'].dt.year
@@ -156,8 +157,8 @@ model.fit(X_train_poly, y_train)
 # Evaluación del modelo
 y_pred = model.predict(X_test_poly)
 rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-# r2 = r2_score(y_test, y_pred)
-# print('RMSE:', rmse,'R2:', r2)
+r2 = r2_score(y_test, y_pred)
+print('RMSE:', rmse,'R2:', r2)
 
 # Definición de la API que muestra la predicción de precios, RMSE y R2
 # Obtención de todos los géneros únicos
