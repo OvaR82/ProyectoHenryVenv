@@ -86,8 +86,8 @@ Sumado a esto, la API incorpora un modelo predictivo que estima el precio de un 
 Cabe destacar que el modelo predictivo fue entrenado previamente utilizando el algoritmo de regresión de Bagging (BaggingRegressor) -luego de armar y probar sendos otros algoritmos similares- y se evaluó utilizando el error cuadrático medio (RMSE) para medir su precisión. La API proporciona una función de predicción ('get_prediccion') que utiliza el modelo entrenado para predecir el precio de un juego con base en las características proporcionadas por el usuario.
 
 En resumen, el archivo 'main.py' ofrece una API completa y funcional que permite a los usuarios obtener información detallada sobre juegos de Steam según su año de lanzamiento, así como también realizar predicciones de precios basadas en un modelo predictivo entrenado. La API es una herramienta útil para explorar datos y obtener información valiosa sobre la industria de los videojuegos en Steam.
-* Nota: Para garantizar el correcto funcionamiento de la API, es necesario ejecutar el código completo en el archivo 'main.py', asegurándose de incluir todas las importaciones y definiciones necesarias. 
+* Nota: Para garantizar el correcto funcionamiento de la API, es necesario ejecutar el código completo en el archivo 'main.py', asegurándose de incluir todas las importaciones y definiciones necesarias.
 
 ## Links relacionados
-* Acceso a la API: https://deploy-henry-project.onrender.com
+* Acceso a la API: https://deploy-henry-project.onrender.com/docs
 * Acceso al video explicativo:  

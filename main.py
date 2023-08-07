@@ -189,7 +189,7 @@ async def get_prediccion(
     ),
     early_access: str = Query(
         ...,  # Parámetro requerido
-        description="Indica si el juego está en acceso anticipado. Elija 'si' o 'no'.",
+        description="Indique si el juego está en acceso anticipado. Elija 'si' o 'no'.",
     )
 ):
     # Usamos los dummies de 'genres'
