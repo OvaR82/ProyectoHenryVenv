@@ -71,7 +71,7 @@ def check_year(year: int):
 # Función que habilita el acceso a la API
 @app.get("/")
 async def read_root():
-    return {"Steam Games": "API Modelo Predicción de Precios"}
+    return {"Proyecto Individual SoyHenry": "API Modelo Predicción de Precios Steam"}
 
 # Función que retorna los 5 géneros más vendidos
 @app.get('/genero/')
