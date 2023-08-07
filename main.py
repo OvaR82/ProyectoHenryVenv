@@ -134,6 +134,7 @@ def metascore(año: int):
 # Armado del modelo predictivo
 # Extracción datos desde listas anidadas en 'genres'
 steam_unnested = data_steam.explode('genres').explode('tags').explode('specs')
+steam_unnested['genres'] = steam_unnested['genres'].replace('', np.nan)
 steam_unnested = steam_unnested.dropna(subset=['genres'])
 
 # Conversión de 'release_date' a año
