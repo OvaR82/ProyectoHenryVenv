@@ -42,10 +42,15 @@ El problema de negocio consiste en predecir el precio de los videojuegos en la p
 
 ### Conclusiones
 El proceso de Extracción, Transformación y Carga (ETL) junto con el Análisis Exploratorio de Datos (EDA) realizado sobre el dataset de steam_games ha sido fundamental para preparar los datos y obtener una visión clara de la información disponible. A través de este proceso, hemos logrado entender la estructura y distribución de los datos, identificar posibles relaciones entre las variables y detectar patrones interesantes que pueden ser útiles para la creación de un modelo predictivo de precios de videojuegos.
+
 En la fase de ETL, se llevaron a cabo diversas acciones para asegurar la calidad y coherencia de los datos. Se realizó una limpieza inicial para eliminar filas duplicadas y valores nulos en la variable 'id', lo que nos permitió tener un dataframe consistente y libre de inconsistencias. Además, se ajustaron los tipos de datos adecuados para cada columna y se extrajeron los datos contenidos en listas, como géneros, etiquetas y especificaciones, para facilitar su análisis y visualización.
+
 En el Análisis Exploratorio de Datos, se utilizaron diversas técnicas de visualización para entender mejor la distribución de los datos y las relaciones entre las variables. Se crearon histogramas para visualizar la distribución de precios y puntajes de metacritic, boxplots para detectar outliers y entender la variabilidad de las variables, violinplots para comprender la distribución de precios y puntajes por género y acceso temprano, y scatterplots para explorar la relación entre el puntaje de metacritic y el precio de los videojuegos.
+
 A través de estas visualizaciones, se pudo observar que los géneros "Indie" y "Action" son los más predominantes en el dataset, mientras que los géneros "Free to Play" y "Early Access" son los menos comunes. También se encontró que la mayoría de los precios de los videojuegos se encuentran en un rango entre 10 y 25 unidades, con algunos valores atípicos por encima de ese rango. Además, se descubrió que los videojuegos con puntajes de metacritic por encima de 60 tienden a tener precios más altos, lo que sugiere una relación positiva entre la calidad del juego y su precio.
+
 El Análisis de Componentes Principales (PCA) fue una herramienta poderosa para reducir la dimensionalidad del dataset y permitir una mejor visualización de los datos. Mediante el PCA, se pudo proyectar el dataset en un espacio de menor dimensión, manteniendo una cantidad significativa de la varianza original. Esto facilita el análisis y la construcción de modelos predictivos, ya que se trabaja con un número reducido de componentes principales que explican la mayor parte de la variabilidad de los datos.
+
 Este proceso de análisis y preparación de datos sienta las bases para un exitoso desarrollo de modelos de Machine Learning y permite tomar decisiones informadas que nos ayudarán a comprender mejor los factores que influyen en los precios de los videojuegos en la plataforma Steam. El siguiente paso será utilizar estos conocimientos para desarrollar un modelo predictivo adecuado y eficiente que sea útil para los objetivos planteados.
 
 ## Creación de la API y el modelo predictivo
@@ -68,6 +73,7 @@ Este proceso de análisis y preparación de datos sienta las bases para un exito
 
 ## Resultado final
 El archivo 'main.py' contiene una API implementada con FastAPI que proporciona información detallada sobre los juegos de Steam según su año de lanzamiento. La API ofrece diversas rutas que permiten obtener datos relevantes sobre géneros más vendidos, juegos lanzados, especificaciones populares, cantidad de juegos con acceso temprano, tipos de opiniones registradas y los juegos mejor calificados según su metascore. 
+
 La API cuenta con las siguientes rutas y funciones:
 1. `/genero/`: Devuelve los 5 géneros más vendidos en un año específico, junto con la cantidad de juegos asociados a cada género.
 2. `/juegos/`: Muestra los nombres de los juegos lanzados en un año específico.
@@ -75,7 +81,9 @@ La API cuenta con las siguientes rutas y funciones:
 4. `/acceso_temprano/`: Muestra la cantidad de juegos que tienen acceso temprano en un año específico.
 5. `/opiniones/`: Devuelve la cantidad de juegos registrados para cada tipo de opinión relevante en un año específico.
 6. `/metascore/`: Muestra los 5 juegos mejor calificados según su metascore en un año específico.
+
 Sumado a esto, la API incorpora un modelo predictivo que estima el precio de un juego basándose en características como el año de lanzamiento, el metascore y la disponibilidad de acceso temprano. Para obtener una predicción de precio, se debe realizar una solicitud a la ruta `/prediccion/` y proporcionar valores válidos para los parámetros 'genero', 'año', 'metascore' y 'early_access'.
 Cabe destacar que el modelo predictivo fue entrenado previamente utilizando el algoritmo de regresión de Bagging (BaggingRegressor) -luego de armar y probar sendos otros algoritmos similares- y se evaluó utilizando el error cuadrático medio (RMSE) para medir su precisión. La API proporciona una función de predicción ('get_prediccion') que utiliza el modelo entrenado para predecir el precio de un juego con base en las características proporcionadas por el usuario.
+
 En resumen, el archivo 'main.py' ofrece una API completa y funcional que permite a los usuarios obtener información detallada sobre juegos de Steam según su año de lanzamiento, así como también realizar predicciones de precios basadas en un modelo predictivo entrenado. La API es una herramienta útil para explorar datos y obtener información valiosa sobre la industria de los videojuegos en Steam.
 * Nota: Para garantizar el correcto funcionamiento de la API, es necesario ejecutar el código completo en el archivo 'main.py', asegurándose de incluir todas las importaciones y definiciones necesarias. 
