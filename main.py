@@ -1,3 +1,23 @@
+'''
+Implementación de API con modelo predictivo
+----------------------------------------------------------------------------------------------------------------------------------------------------
+Se debe empezar desde 0, haciendo un trabajo rápido de Data Engineer y tener un MVP (Minimum Viable Product) para el cierre del proyecto.
+Transformaciones: Para este MVP no se necesita transformar los datos dentro del dataset pero si trabajar en leer el dataset con el formato correcto.
+Desarrollo API: Se propone disponibilizar los datos de la empresa usando el framework FastAPI. Las consultas serán las siguientes:
+Se crearan 6 funciones para los endpoints que se consumirán en la API, debiendo tener un decorador por cada una (@app.get(‘/’)).
+    def genero( Año: str ): Se ingresa un año y devuelve una lista con los 5 géneros más ofrecidos en el orden correspondiente.
+    def juegos( Año: str ): Se ingresa un año y devuelve una lista con los juegos lanzados en el año.
+    def specs( Año: str ): Se ingresa un año y devuelve una lista con los 5 specs que más se repiten en el mismo en el orden correspondiente.
+    def earlyacces( Año: str ): Cantidad de juegos lanzados en un año con early access.
+    def sentiment( Año: str ): Según el año de lanzamiento, se devuelve una lista con la cantidad de registros que se encuentren categorizados con un análisis de sentimiento.
+                        Ejemplo de retorno: {Mixed = 182, Very Positive = 120, Positive = 278}
+    def metascore( Año: str ): Top 5 juegos según año con mayor metascore.
+    Importante
+    El MVP tiene que ser una API que pueda ser consumida segun los criterios de API REST o RESTful. 
+    Algunas herramientas, como por ejemplo Streamlit, si bien pueden brindar una interfaz de consulta, 
+    no cumplen con las condiciones para ser consideradas una API, sin workarounds.
+Deployment: Utilizar Render, Railway o cualquier otro servicio que permita que la API pueda ser consumida desde la web.
+'''
 # Importación de librerías necesarias
 import json
 import ast
@@ -16,7 +36,6 @@ from datetime import datetime
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 from typing import Dict, Union
-
 
 # Implementación de FastAPI
 app = FastAPI()
