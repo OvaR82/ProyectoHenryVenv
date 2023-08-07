@@ -68,6 +68,11 @@ def check_year(year: int):
     if year < min_year or year > max_year:
         raise HTTPException(status_code=400, detail=f"Año sin registro en la base de datos. Elija un año entre {min_year} y {max_year}.")
 
+# Función que habilita el acceso a la API
+@app.get("/")
+async def read_root():
+    return {"Steam Games": "API Modelo Predicción de Precios"}
+
 # Función que retorna los 5 géneros más vendidos
 @app.get('/genero/')
 def genero(año: int):
@@ -157,8 +162,8 @@ model.fit(X_train_poly, y_train)
 # Evaluación del modelo
 y_pred = model.predict(X_test_poly)
 rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-r2 = r2_score(y_test, y_pred)
-print('RMSE:', rmse,'R2:', r2)
+# r2 = r2_score(y_test, y_pred)
+# print('RMSE:', rmse,'R2:', r2)
 
 # Definición de la API que muestra la predicción de precios, RMSE y R2
 # Obtención de todos los géneros únicos
