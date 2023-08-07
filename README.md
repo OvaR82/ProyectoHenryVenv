@@ -87,3 +87,7 @@ Cabe destacar que el modelo predictivo fue entrenado previamente utilizando el a
 
 En resumen, el archivo 'main.py' ofrece una API completa y funcional que permite a los usuarios obtener información detallada sobre juegos de Steam según su año de lanzamiento, así como también realizar predicciones de precios basadas en un modelo predictivo entrenado. La API es una herramienta útil para explorar datos y obtener información valiosa sobre la industria de los videojuegos en Steam.
 * Nota: Para garantizar el correcto funcionamiento de la API, es necesario ejecutar el código completo en el archivo 'main.py', asegurándose de incluir todas las importaciones y definiciones necesarias. 
+
+## Links relacionados
+* Acceso a la API: https://deploy-henry-project.onrender.com
+* Acceso al video explicativo:  
