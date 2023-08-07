@@ -1,4 +1,4 @@
-# Análisis y predicción de precios de juegos en la plataforma Steam
+# Análisis y predicción de precios de juegos ofrecidos en la plataforma Steam
 ## Proyecto ML Ops de Henry: ETL y EDA sobre el dataset de steam_games.json
 
 ### Introducción
