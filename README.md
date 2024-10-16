@@ -1,5 +1,5 @@
 # Análisis y predicción de precios de juegos ofrecidos en la plataforma Steam
-## Proyecto ML Ops de Henry: ETL y EDA sobre el dataset de steam_games.json
+## Proyecto ML Ops: ETL y EDA sobre el dataset de steam_games.json
 
 ### Introducción
 Este proyecto tiene como objetivo desarrollar un modelo predictivo para predecir el precio de un videojuego utilizando el dataset de steam_games. Para lograr este objetivo, se realizará un proceso de Extracción, Transformación y Carga (ETL) para limpiar y preparar los datos, así como un Análisis Exploratorio de Datos (EDA) para entender las relaciones entre las variables y detectar patrones interesantes.
